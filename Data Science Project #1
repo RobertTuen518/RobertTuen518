@@ -1,0 +1,131 @@
+# Naive Bayes Classifier
+
+# Step 1 load the requires packages
+library(Amelia) #  A Program for Missing Data
+library(caret) #  for Classification And Regression Training
+library(dplyr) # data manipulation 
+library(e1071) # holds the Naive Bayes function
+library(GGally) # build a great scatterplot matrix
+library(ggplot2) # data visualization
+library(mice) # to predict missing values
+library(psych) # to produce stats in an easy to read data.frame
+library(rpart) # builds classification or regression models 
+library(tidyverse) # data manipulation
+library(lubridate) # easier to work with dates and times
+
+# Step 2 import the data set
+AQI_data <- read.csv("train.csv", stringsAsFactors = FALSE)
+
+# convert date time format
+AQI_data$date_time<-as.POSIXct(AQI_data$date_time,format = "%Y-%m-%d %H:%M")
+
+# convert the variable ("air pollution index") into a categorical variable.
+# convert the variable into numeric value
+AQI_data$air_pollution_index <- as.numeric(AQI_data$air_pollution_index)
+API = cut(AQI_data$air_pollution_index,
+          breaks=c(0,50,100,150,200,300,500)
+          ,labels = c("Good","Moderate","Unhealthy for Sensitive Groups", 
+                      "Unhealthy", "Very Unhealthy","Hazardous"),right =FALSE)
+
+# the air pollution index sorts accordingly
+AQI_data$air_pollution_index[1:10]
+API[1:10]
+
+# convert the variable into factor 
+AQI_data$air_pollution_index <- as.factor(API)
+
+# Step 3 Study the data set
+str(AQI_data)
+head(AQI_data)
+
+# Step 4 Data Cleaning
+# convert '0' values into NA
+AQI_data[AQI_data==0] <- NA
+
+# visualize the missing data
+missmap(AQI_data)
+
+# use mice package to predict missing values
+mice_mod <- mice(AQI_data[,c("wind_speed","wind_direction","temperature","rain_p_h"
+                             ,"snow_p_h","clouds_all","traffic_volume")])
+mice_complete <- complete(mice_mod)
+
+#Transfer the predicted missing values into the main data set
+AQI_data$wind_speed <- mice_complete$wind_speed
+AQI_data$wind_direction <- mice_complete$wind_direction
+AQI_data$temperature <- mice_complete$temperature
+AQI_data$rain_p_h <- mice_complete$rain_p_h
+AQI_data$snow_p_h <- mice_complete$snow_p_h
+AQI_data$clouds_all <- mice_complete$clouds_all
+AQI_data$traffic_volume <- mice_complete$traffic_volume
+
+# To check if there are still any missing values
+missmap(AQI_data)
+
+# Step 5 Exploratory Data Analysis
+# Data Visualization
+# visual 1
+ggplot(AQI_data, aes(humidity, colour = API)) + geom_freqpoly(binwidth = 1) + 
+  labs (title = "Humidity Distribution by Air Pollution Index")
+
+# visual 2
+a <- ggplot(AQI_data, aes(x = wind_speed, fill = API, color = API)) +
+  geom_histogram(binwidth = 1) + labs(title="Wind Speed Distribution by Air Pollution Index")
+a + theme_bw()
+
+# visual 3
+b <- ggplot(AQI_data, aes(x = wind_direction, fill = API, color = API)) +
+  geom_histogram(binwidth = 1) + labs(title="Wind Direction Distribution by Air Pollution Index")
+b + theme_bw()
+
+# visual 4
+ggplot(AQI_data, aes(visibility_in_miles, colour = API)) + geom_freqpoly(binwidth = 1) + 
+  labs(title="Visibility in Miles Distribution by Air Pollution Index")
+
+# visual 5  
+ggplot(AQI_data, aes(traffic_volume, colour = API)) + geom_freqpoly(binwidth = 1) + 
+  labs (title = "Traffic Volume Distribution by Air Pollution Index")
+
+# visual 6
+# allows to visualize the correlation of each pair of variable as a square
+ggcorr(AQI_data,label = TRUE)
+
+# Step 6 Data Modelling
+# Building a model
+# split data into training and test data sets
+data.a <- createDataPartition(y = AQI_data$air_pollution_index , p = 0.6,list =FALSE)
+AQI_train <- AQI_data[data.a,] # 60 % training data
+AQI_test <- AQI_data[-data.a,] # remaining 40% test data
+
+# Check dimensions of the split
+prop.table(table(API)) * 100
+
+prop.table(table(AQI_train$air_pollution_index)) * 100
+
+prop.table(table(AQI_test$air_pollution_index)) * 100
+
+# K-fold cross validation
+# defining trctrl
+trctrl <- trainControl(method = "cv", number = 10, savePredictions=TRUE)
+set.seed(123) # to generate a sequence of random numbers 
+nb_fit <- train(factor(air_pollution_index) ~ ., data = AQI_train, method = "naive_bayes", trControl=trctrl)
+# display results
+nb_fit
+
+# create Naive Bayes model by using the training data set
+# there is no data found in the level "Hazardous"
+classifier_AQI <- naiveBayes(factor(air_pollution_index) ~ . , data = AQI_train)
+classifier_AQI
+# Actual number of A-priori probability
+classifier_AQI$apriori
+
+# Step 7 Model Evaluation
+# Predicting on test data'
+y_pred <- predict(classifier_AQI, newdata = AQI_test)
+summary(y_pred)
+
+# Confusion Matrix
+cm <- table(y_pred,factor(AQI_test$air_pollution_index))
+
+# evaluate the accuracy of the model by using a Confusion matrix.
+confusionMatrix(cm)
