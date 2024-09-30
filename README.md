@@ -10,7 +10,7 @@ I'm continuously advancing my knowledge in:
 
 <h2> 💼 Career Objectives </h2>
 I am seeking opportunities in Data Science, Data Analytics, or Data Engineering where I can apply my skills and contribute to meaningful projects.
-<br>  I’m particularly excited about collaborating with companies and partners on data science projects that have a real-world impact. </br> 
+I’m particularly excited about collaborating with companies and partners on data science projects that have a real-world impact.
 
 <h2> 💡 My Expertise </h2>
 - Programming: Python, R, SQL
