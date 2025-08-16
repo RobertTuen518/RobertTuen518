@@ -1,6 +1,9 @@
 <h1> Hi there 👋, I'm Yong Hao! </h1>
-I'm a Final Year Data Science Student at Universiti Malaysia Sabah passionate about exploring data-driven solutions. 
-My journey in data science has been shaped by a solid foundation in programming, problem-solving, and critical thinking.
+I am a recent graduate from Universiti Malaysia Sabah (UMS). I have a strong foundation in data analytics, data management, and robotic process automation (RPA). I am proficient in Microsoft Power BI and skilled in R, Python, and SQL.
+
+During my six-month internship at BP as a GBS Data Operations intern, I contributed to master data management and supported various automation projects. Additionally, I completed a six-month role at BAT as part of the IDT Cloud Center of Excellence (CoE), which enhanced my skills in cloud computing technologies through hands-on experience. 
+
+I am eager to continue developing my skills, and exploring future trends in big data
 
 <h2> 🌱 What I'm Learning </h2>
 I'm continuously advancing my knowledge in:
